@@ -1,10 +1,9 @@
 import Medusa from "@medusajs/js-sdk";
 import { config } from "dotenv";
 import { z, ZodTypeAny } from "zod";
-import storeJson from "../oas/store.json";
+import storeJson from "../oas/store.oas.json";
 import { SdkRequestType, StoreJson, Parameter } from "../types/store-json";
 import { defineTool, InferToolHandlerInput } from "../utils/define-tools";
-import { StoreProductListResponse } from "@medusajs/types";
 
 config();
 
@@ -81,9 +80,9 @@ export default class MedusaStoreService {
                 },
 
                 handler: async (
-                    input: InferToolHandlerInput<any, ZodTypeAny>
+                    input: InferToolHandlerInput<Record<string, ZodTypeAny>>
                 ): Promise<any> => {
-                    const query = new URLSearchParams(input);
+                    const query = new URLSearchParams(input as any);
                     const body = Object.entries(input).reduce(
                         (acc, [key, value]) => {
                             if (

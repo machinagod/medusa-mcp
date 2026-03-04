@@ -1,31 +1,45 @@
-import { z, ZodAny, ZodType } from "zod";
+import { z } from "zod";
+import type { ZodTypeAny } from "zod";
 import { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
-import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import type {
+    CallToolResult,
+    ServerRequest,
+    ServerNotification
+} from "@modelcontextprotocol/sdk/types.js";
 
-export type ToolDefinition<T, R extends ZodType, O> = {
+/** Inferred input type for a tool whose inputSchema is a record of Zod schemas. */
+export type InferToolHandlerInput<T extends Record<string, ZodTypeAny>> = {
+    [K in keyof T]: z.infer<T[K]>;
+};
+
+export type ToolDefinition<T extends Record<string, ZodTypeAny>, O> = {
     name: string;
     description: string;
     inputSchema: T;
-    handler: (input: InferToolHandlerInput<T, R>) => Promise<O>;
+    handler: (input: InferToolHandlerInput<T>) => Promise<O>;
 };
 
-export type InferToolHandlerInput<T, X extends ZodType> = {
-    [K in keyof T]: z.infer<X>;
+type CallToolResultContent = {
+    content: CallToolResult["content"];
+    isError?: boolean;
+    statusCode?: number;
 };
 
-export const defineTool = (
-    cb: (zod: typeof z) => ToolDefinition<any, ZodAny, any>
-) => {
+export function defineTool<T extends Record<string, ZodTypeAny>, O>(
+    cb: (zod: typeof z) => ToolDefinition<T, O>
+): Omit<ToolDefinition<T, O>, "handler"> & {
+    handler: (
+        input: InferToolHandlerInput<T>,
+        _extra: RequestHandlerExtra<ServerRequest, ServerNotification>
+    ) => Promise<CallToolResultContent>;
+} {
     const tool = cb(z);
 
     const wrappedHandler = async (
-        input: InferToolHandlerInput<Zod.ZodAny, Zod.ZodAny>,
-        _: RequestHandlerExtra
-    ): Promise<{
-        content: CallToolResult["content"];
-        isError?: boolean;
-        statusCode?: number;
-    }> => {
+        input: InferToolHandlerInput<T>,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- MCP server passes extra as second argument
+        _extra: RequestHandlerExtra<ServerRequest, ServerNotification>
+    ): Promise<CallToolResultContent> => {
         try {
             const result = await tool.handler(input);
             return {
@@ -57,4 +71,4 @@ export const defineTool = (
         ...tool,
         handler: wrappedHandler
     };
-};
+}
