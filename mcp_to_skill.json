@@ -1,0 +1,11 @@
+{
+    "name": "medusa-mcp",
+    "command": "node",
+    "args": ["dist/index.js"],
+    "env": {
+        "MEDUSA_BACKEND_URL": "http://localhost:9000",
+        "PUBLISHABLE_KEY": "pk_10b6c36dc4febc291dfcebd27ed4286b33aa02527bad661c91edf28f03d0a822",
+        "MEDUSA_USERNAME": "admin@localhost.com",
+        "MEDUSA_PASSWORD": "password"
+    }
+  }

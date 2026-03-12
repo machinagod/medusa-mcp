@@ -98,6 +98,46 @@ npx @modelcontextprotocol/inspector ./dist/index.js
 
 ---
 
+## 🛠️ Generating a Claude Skill from this MCP server
+
+You can convert this MCP server into a Claude Skill using the `mcp-to-skill.py` script from the [`mcp-to-skill-converter` project](https://github.com/GBSOSS/-mcp-to-skill-converter/blob/main/mcp_to_skill.py), which is included in this repo as `mcp-to-skill.py`.
+
+1. **Build the MCP server** (so the command in the config works):
+
+   ```bash
+   npm run build
+   ```
+
+2. **Ensure Python and the `mcp` package are available**:
+
+   ```bash
+   pip install mcp
+   ```
+
+3. **Generate a Skill for this server** using the provided `mcp-to-skill.json` config:
+
+   ```bash
+   python mcp-to-skill.py --mcp-config mcp-to-skill.json --output-dir ./skills/medusa-mcp
+   ```
+
+   This will create:
+   - `SKILL.md` – instructions for Claude  
+   - `executor.py` – MCP communication handler  
+   - `mcp-config.json` – MCP server configuration  
+   - `package.json` – minimal dependencies for the skill
+
+4. **Install the Skill for Claude**:
+
+   ```bash
+   cd skills/medusa-mcp
+   pip install mcp
+   cp -r . ~/.claude/skills/medusa-mcp
+   ```
+
+Claude will automatically discover the new Skill on next startup.
+
+---
+
 ## 🌍 Environment Variables
 
 | Variable              | Description                          |
