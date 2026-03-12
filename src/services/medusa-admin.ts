@@ -45,17 +45,38 @@ export default class MedusaAdminService {
                 method = "get";
                 name = refFunction.get.operationId;
                 description = refFunction.get.description;
-                parameters = (refFunction.get.parameters ?? "") as any;
+                const rawParams = (refFunction.get as any).parameters;
+                if (Array.isArray(rawParams)) {
+                    parameters = rawParams;
+                } else if (!rawParams) {
+                    parameters = [];
+                } else {
+                    parameters = [rawParams];
+                }
             } else if ("post" in refFunction) {
                 method = "post";
                 name = refFunction.post.operationId;
                 description = refFunction.post.description;
-                parameters = refFunction.post.parameters ?? [];
+                const rawParams = (refFunction.post as any).parameters;
+                if (Array.isArray(rawParams)) {
+                    parameters = rawParams;
+                } else if (!rawParams) {
+                    parameters = [];
+                } else {
+                    parameters = [rawParams];
+                }
             } else if ("delete" in refFunction) {
                 method = "delete";
                 name = (refFunction.delete as any).operationId;
                 description = (refFunction.delete as any).description;
-                parameters = (refFunction.delete as any).parameters ?? [];
+                const rawParams = (refFunction.delete as any).parameters;
+                if (Array.isArray(rawParams)) {
+                    parameters = rawParams;
+                } else if (!rawParams) {
+                    parameters = [];
+                } else {
+                    parameters = [rawParams];
+                }
             }
             if (!name) {
                 throw new Error("No name found for path: " + refPath);
@@ -64,7 +85,7 @@ export default class MedusaAdminService {
                 name: `Admin${name}`,
                 description: `This tool helps store administors. ${description}`,
                 inputSchema: {
-                    ...parameters
+                    ...(parameters ?? [])
                         .filter((p) => p.in != "header")
                         .reduce((acc, param) => {
                             switch (param.schema.type) {
