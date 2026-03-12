@@ -1,10 +1,9 @@
 import Medusa from "@medusajs/js-sdk";
 import { config } from "dotenv";
 import { z, ZodTypeAny } from "zod";
-import adminJson from "../oas/admin.json";
-import { SdkRequestType, Parameter } from "../types/admin-json";
+import adminJson from "../oas/admin.oas.json";
+import { AdminJson, SdkRequestType, Parameter } from "../types/admin-json";
 import { defineTool, InferToolHandlerInput } from "../utils/define-tools";
-import { StoreProductListResponse } from "@medusajs/types";
 
 config();
 
@@ -94,9 +93,9 @@ export default class MedusaAdminService {
                 },
 
                 handler: async (
-                    input: InferToolHandlerInput<any, ZodTypeAny>
+                    input: InferToolHandlerInput<Record<string, ZodTypeAny>>
                 ): Promise<any> => {
-                    const query = new URLSearchParams(input);
+                    const query = new URLSearchParams(input as any);
                     const body = Object.entries(input).reduce(
                         (acc, [key, value]) => {
                             if (
@@ -138,7 +137,7 @@ export default class MedusaAdminService {
         });
     }
 
-    defineTools(admin = adminJson): any[] {
+    defineTools(admin = adminJson as any): any[] {
         const paths = Object.entries(admin.paths) as [string, SdkRequestType][];
         const tools = paths.map(([path, refFunction]) =>
             this.wrapPath(path, refFunction)
