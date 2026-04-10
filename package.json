@@ -11,6 +11,8 @@
     "inspector": "mcp-inspector m",
     "dev:inspector": "npx @modelcontextprotocol/inspector node dist/index.js"
   },
+  "workspaces": ["."
+  ],
   "keywords": [],
   "author": {
     "name": "govind diwakar",
