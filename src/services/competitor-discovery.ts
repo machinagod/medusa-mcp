@@ -47,6 +47,9 @@ export function defineCompetitorDiscoveryTools(call: BackendCall): McpTool[] {
                             competitor_name: z.string().optional(),
                             competitor_base_url: z.string().optional(),
                             competitor_country: z.string().optional(),
+                            competitor_price_tax_basis: z
+                                .enum(["incl", "excl"])
+                                .optional(),
                             competitor_scraper_key: z.string().optional(),
                             competitor_scraper_hints: z
                                 .record(z.string(), z.unknown())
