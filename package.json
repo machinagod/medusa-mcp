@@ -4,14 +4,17 @@
   "main": "index.js",
   "private": "false",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
     "inspector": "mcp-inspector m",
-    "dev:inspector": "npx @modelcontextprotocol/inspector node dist/index.js"
+    "dev:inspector": "npx @modelcontextprotocol/inspector node dist/index.js",
+    "test:watch": "vitest"
   },
-  "workspaces": ["."],
+  "workspaces": [
+    "."
+  ],
   "keywords": [],
   "author": {
     "name": "govind diwakar",
@@ -51,6 +54,7 @@
     "prettier": "^2.7.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.0",
-    "vite": "^6.2.5"
+    "vite": "^6.2.5",
+    "vitest": "^4.1.9"
   }
 }

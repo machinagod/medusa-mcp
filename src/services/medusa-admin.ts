@@ -4,6 +4,7 @@ import { z, ZodTypeAny } from "zod";
 import adminJson from "../oas/admin.oas.json";
 import { AdminJson, SdkRequestType, Parameter } from "../types/admin-json";
 import { defineTool, InferToolHandlerInput } from "../utils/define-tools";
+import type { BackendCall } from "../tools/types";
 
 config();
 
@@ -165,4 +166,26 @@ export default class MedusaAdminService {
         );
         return tools;
     }
+
+    /**
+     * Authenticated request to any backend route; returns parsed JSON. Handed to
+     * auto-discovered tool modules (see tools/registry) as `ctx.request`.
+     */
+    request: BackendCall = (method, path, opts = {}) => {
+        const query = opts.query
+            ? Object.fromEntries(
+                  Object.entries(opts.query).filter(([, v]) => v !== undefined)
+              )
+            : undefined;
+        return this.sdk.client.fetch(path, {
+            method,
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+                Authorization: `Bearer ${this.adminToken}`
+            },
+            ...(query ? { query } : {}),
+            ...(opts.body ? { body: JSON.stringify(opts.body) } : {})
+        });
+    };
 }
