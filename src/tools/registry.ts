@@ -16,10 +16,14 @@ const MODULE_RE = /\.module\.(js|ts)$/;
  * Uses `__dirname` (the package is CommonJS) so it resolves the same under the
  * compiled build, ts-node, and vitest.
  */
-export async function loadToolModules(ctx: ToolContext): Promise<McpTool[]> {
+export async function loadToolModules(
+    ctx: ToolContext,
+    opts: { dir?: string } = {}
+): Promise<McpTool[]> {
+    const dir = opts.dir ?? __dirname;
     let entries: string[] = [];
     try {
-        entries = await readdir(__dirname);
+        entries = await readdir(dir);
     } catch (err) {
         console.error("[tools] could not scan tool modules dir:", err);
         return [];
@@ -34,7 +38,7 @@ export async function loadToolModules(ctx: ToolContext): Promise<McpTool[]> {
     for (const file of files) {
         try {
             const ns: Record<string, unknown> = await import(
-                pathToFileURL(join(__dirname, file)).href
+                pathToFileURL(join(dir, file)).href
             );
             // Robust to ESM/CJS interop (single or double `default`): pick the
             // export that actually looks like a ToolModule.

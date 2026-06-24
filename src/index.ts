@@ -1,60 +1,28 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import MedusaStoreService from "./services/medusa-store";
-import MedusaAdminService from "./services/medusa-admin";
-import { loadToolModules } from "./tools/registry";
+import { buildTools, makeServer } from "./server";
+import { startHttp } from "./http";
 
+/**
+ * Transport selection:
+ *   - stdio (default) — local process the Claude config spawns
+ *   - http — Streamable HTTP service with a URL; enabled by `MCP_TRANSPORT=http`
+ *            or simply by `PORT` being set (so a Railway/container deploy is HTTP
+ *            automatically).
+ */
 async function main(): Promise<void> {
     console.error("Starting Medusa Store MCP Server...");
-    const medusaStoreService = new MedusaStoreService();
-    const medusaAdminService = new MedusaAdminService();
-    let tools = [];
-    try {
-        await medusaAdminService.init();
+    const tools = await buildTools();
 
-        // Auto-discovered tool modules (tools/*.module.ts) get the live services
-        // + an authed backend call, so new modules need no edit here.
-        const moduleTools = await loadToolModules({
-            admin: medusaAdminService,
-            store: medusaStoreService,
-            request: medusaAdminService.request
-        });
-
-        tools = [
-            ...medusaStoreService.defineTools(),
-            ...medusaAdminService.defineTools(),
-            ...moduleTools
-        ];
-    } catch (error) {
-        console.error("Error initializing Medusa Admin Services:", error);
-        tools = [...medusaStoreService.defineTools()];
+    const mode = process.env.MCP_TRANSPORT ?? (process.env.PORT ? "http" : "stdio");
+    if (mode === "http") {
+        await startHttp(tools);
+        return;
     }
 
-    const server = new McpServer(
-        {
-            name: "Medusa Store MCP Server",
-            version: "1.0.0"
-        },
-        {
-            capabilities: {
-                tools: {}
-            }
-        }
-    );
-
-    tools.forEach((tool) => {
-        server.tool(
-            tool.name,
-            tool.description,
-            tool.inputSchema,
-            tool.handler
-        );
-    });
-
+    const server = makeServer(tools);
     const transport = new StdioServerTransport();
     console.error("Connecting server to transport...");
     await server.connect(transport);
-
     console.error("Medusajs MCP Server running on stdio");
 }
 

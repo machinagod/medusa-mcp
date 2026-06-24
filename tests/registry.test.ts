@@ -1,6 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
+import { join } from "node:path";
 import { loadToolModules } from "../src/tools/registry";
 import type { ToolContext } from "../src/tools/types";
+
+const FIXTURES = join(__dirname, "fixtures", "tools");
 
 const ctx = (): ToolContext => ({
     admin: {} as any,
@@ -24,5 +27,16 @@ describe("tool module registry", () => {
         expect(stats).toBeTruthy();
         const res = await stats.handler({});
         expect(res).toHaveProperty("content");
+    });
+
+    it("loads valid modules and skips broken / duplicate / throwing ones", async () => {
+        const tools = await loadToolModules(ctx(), { dir: FIXTURES });
+        const names = tools.map((t: any) => t.name);
+        expect(names).toEqual(["alpha_tool"]); // broken (no module), dup (same name), throws (import error), helper (not *.module) all skipped
+    });
+
+    it("returns [] when the modules dir can't be scanned", async () => {
+        const tools = await loadToolModules(ctx(), { dir: join(__dirname, "no", "such", "dir") });
+        expect(tools).toEqual([]);
     });
 });
