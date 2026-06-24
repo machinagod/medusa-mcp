@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import MedusaStoreService from "./services/medusa-store";
 import MedusaAdminService from "./services/medusa-admin";
+import { loadToolModules } from "./tools/registry";
 
 async function main(): Promise<void> {
     console.error("Starting Medusa Store MCP Server...");
@@ -11,9 +12,18 @@ async function main(): Promise<void> {
     try {
         await medusaAdminService.init();
 
+        // Auto-discovered tool modules (tools/*.module.ts) get the live services
+        // + an authed backend call, so new modules need no edit here.
+        const moduleTools = await loadToolModules({
+            admin: medusaAdminService,
+            store: medusaStoreService,
+            request: medusaAdminService.request
+        });
+
         tools = [
             ...medusaStoreService.defineTools(),
-            ...medusaAdminService.defineTools()
+            ...medusaAdminService.defineTools(),
+            ...moduleTools
         ];
     } catch (error) {
         console.error("Error initializing Medusa Admin Services:", error);
