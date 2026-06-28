@@ -32,3 +32,18 @@ export function clampToolName(name: string, max: number = MAX_RAW_NAME): string 
   const head = name.slice(0, max - HASH_LEN - 1); // room for "_" + hash
   return `${head}_${hash}`;
 }
+
+/**
+ * Anthropic's API requires every tool input-schema property key to match
+ * `^[a-zA-Z0-9_.-]{1,64}$`; a single bad key 400s the whole request. Medusa's
+ * OAS exposes logical-filter operators named `$and` / `$or` as query params —
+ * the `$` is illegal. Unlike tool names, these keys can't be hashed/clamped
+ * (the handler forwards them verbatim as query params, so renaming would change
+ * their meaning), so callers drop the param entirely. These operators are niche
+ * advanced filters; losing them keeps the tool usable and valid.
+ */
+const PROPERTY_KEY_RE = /^[a-zA-Z0-9_.-]{1,64}$/;
+
+export function isApiSafePropertyKey(name: string): boolean {
+  return PROPERTY_KEY_RE.test(name);
+}

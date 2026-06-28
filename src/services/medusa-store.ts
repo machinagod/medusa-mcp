@@ -4,7 +4,7 @@ import { z, ZodTypeAny } from "zod";
 import storeJson from "../oas/store.oas.json";
 import { SdkRequestType, StoreJson, Parameter } from "../types/store-json";
 import { defineTool, InferToolHandlerInput } from "../utils/define-tools";
-import { clampToolName } from "../utils/tool-name";
+import { clampToolName, isApiSafePropertyKey } from "../utils/tool-name";
 
 config();
 
@@ -54,6 +54,7 @@ export default class MedusaStoreService {
                 inputSchema: {
                     ...parameters
                         .filter((p) => p.in != "header")
+                        .filter((p) => isApiSafePropertyKey(p.name))
                         .reduce((acc, param) => {
                             switch (param.schema.type) {
                                 case "string":
