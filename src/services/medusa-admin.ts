@@ -5,6 +5,8 @@ import adminJson from "../oas/admin.oas.json";
 import { AdminJson, SdkRequestType, Parameter } from "../types/admin-json";
 import { defineTool, InferToolHandlerInput } from "../utils/define-tools";
 import type { BackendCall } from "../tools/types";
+import { clampToolName } from "../utils/tool-name";
+import { isAdminPathAllowed } from "../utils/admin-allowlist";
 
 config();
 
@@ -83,7 +85,7 @@ export default class MedusaAdminService {
                 throw new Error("No name found for path: " + refPath);
             }
             return {
-                name: `Admin${name}`,
+                name: clampToolName(`Admin${name}`),
                 description: `This tool helps store administors. ${description}`,
                 inputSchema: {
                     ...(parameters ?? [])
@@ -161,9 +163,9 @@ export default class MedusaAdminService {
 
     defineTools(admin = adminJson as any): any[] {
         const paths = Object.entries(admin.paths) as [string, SdkRequestType][];
-        const tools = paths.map(([path, refFunction]) =>
-            this.wrapPath(path, refFunction)
-        );
+        const tools = paths
+            .filter(([path]) => isAdminPathAllowed(path))
+            .map(([path, refFunction]) => this.wrapPath(path, refFunction));
         return tools;
     }
 
