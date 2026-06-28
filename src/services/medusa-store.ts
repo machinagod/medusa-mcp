@@ -4,6 +4,7 @@ import { z, ZodTypeAny } from "zod";
 import storeJson from "../oas/store.oas.json";
 import { SdkRequestType, StoreJson, Parameter } from "../types/store-json";
 import { defineTool, InferToolHandlerInput } from "../utils/define-tools";
+import { clampToolName } from "../utils/tool-name";
 
 config();
 
@@ -48,7 +49,7 @@ export default class MedusaStoreService {
             }
 
             return {
-                name: name!,
+                name: clampToolName(name!),
                 description: description,
                 inputSchema: {
                     ...parameters
