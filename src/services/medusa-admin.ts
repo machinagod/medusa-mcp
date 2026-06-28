@@ -5,7 +5,7 @@ import adminJson from "../oas/admin.oas.json";
 import { AdminJson, SdkRequestType, Parameter } from "../types/admin-json";
 import { defineTool, InferToolHandlerInput } from "../utils/define-tools";
 import type { BackendCall } from "../tools/types";
-import { clampToolName } from "../utils/tool-name";
+import { clampToolName, isApiSafePropertyKey } from "../utils/tool-name";
 import { isAdminPathAllowed } from "../utils/admin-allowlist";
 
 config();
@@ -90,6 +90,7 @@ export default class MedusaAdminService {
                 inputSchema: {
                     ...(parameters ?? [])
                         .filter((p) => p.in != "header")
+                        .filter((p) => isApiSafePropertyKey(p.name))
                         .reduce((acc, param) => {
                             switch (param.schema.type) {
                                 case "string":
