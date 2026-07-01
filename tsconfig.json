@@ -8,7 +8,9 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "outDir": "./dist",
-    "strict": true
+    "rootDir": "./src",
+    "strict": true,
+    "types": ["node"]
   },
   "include": ["src/**/*", "patch.js"]
 }
