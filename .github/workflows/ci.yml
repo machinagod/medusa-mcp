@@ -15,9 +15,21 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22.x
+          cache: npm
       - name: Install
-        run: npm install
+        run: npm ci
       - name: Typecheck
         run: npx tsc --noEmit
       - name: Tests + coverage (vitest)
         run: npm run test:coverage
+
+  docker:
+    # Railway builds this Dockerfile on deploy; build it here too so a broken
+    # image fails the PR instead of the production deploy.
+    name: Docker build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t medusa-mcp:ci .
